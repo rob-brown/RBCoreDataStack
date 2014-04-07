@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.license             = { :type => 'MIT', :file => 'LICENSE' }
   s.author              = { "Robert Brown" => "ammoknight@gmail.com" }
   s.social_media_url    = "http://twitter.com/robby_brown"
-  s.platform            = :ios, '7.0'
+  s.platform            = :ios, '6.0'
   s.source              = { :git => "https://github.com/rob-brown/RBCoreDataStack.git", :tag => "0.0.3" }
   s.source_files        = 'Source/Classes/*.{h,m}'
   s.public_header_files = 'Source/Classes/*.h'
