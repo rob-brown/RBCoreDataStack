@@ -37,6 +37,20 @@
 
 @property (nonatomic, strong, readonly) NSManagedObjectContext * defaultContext;
 
+@property (nonatomic, copy) NSString * storeName;
+
+@property (nonatomic, copy) NSString * modelName;
+
+@property (nonatomic, copy) NSString * seedName;
+
+@property (nonatomic, copy) NSString * persistentStoreType;
+
+@property (nonatomic, copy) NSString * storeDirectory;
+
+@property (nonatomic, assign) BOOL useAutomaticLightweightMigration;
+
+@property (nonatomic, assign) BOOL useJournaling;
+
 + (RBCoreDataStack *)defaultStack;
 
 - (NSManagedObjectContext *)createMainContext;

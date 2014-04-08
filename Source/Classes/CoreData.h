@@ -1,5 +1,5 @@
 //
-//  NSManagedObject+RBCoreDataStack.h
+//  CoreData.h
 //
 //  RBCoreDataStack
 //
@@ -24,33 +24,9 @@
 //  THE SOFTWARE.
 //
 
-
 #import <CoreData/CoreData.h>
-
-@interface NSManagedObject (RBCoreDataStack)
-
-+ (NSEntityDescription *)entityForContext:(NSManagedObjectContext *)context;
-
-- (id)initWithContext:(NSManagedObjectContext *)context;
-
-+ (instancetype)createInContext:(NSManagedObjectContext *)context;
-
-- (instancetype)loadIntoContext:(NSManagedObjectContext *)context;
-
-- (void)deleteFromContext:(NSManagedObjectContext *)context;
-
-+ (NSFetchRequest *)fetchRequest;
-
-+ (NSArray *)fetchWithRequest:(NSFetchRequest *)requset inContext:(NSManagedObjectContext *)context;
-
-+ (instancetype)fetchFirstInContext:(NSManagedObjectContext *)context;
-
-+ (instancetype)fetchFirstWithPredicate:(NSPredicate *)predicate inContext:(NSManagedObjectContext *)context;
-
-+ (NSArray *)fetchAllInContext:(NSManagedObjectContext *)context;
-
-+ (NSArray *)fetchAllWithPredicate:(NSPredicate *)predicate inContext:(NSManagedObjectContext *)context;
-
-+ (NSArray *)fetchAllWithPredicate:(NSPredicate *)predicate sortDescriptors:(NSArray *)sortDescriptors inContext:(NSManagedObjectContext *)context;
-
-@end
+#import "RBCoreDataStack.h"
+#import "NSManagedObjectContext+RBCoreDataStack.h"
+#import "NSManagedObject+RBCoreDataStack.h"
+#import "RBManagedObjectContainer.h"
+#import "RBManagedObjectCollection.h"

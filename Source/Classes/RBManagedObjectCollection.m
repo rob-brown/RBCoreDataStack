@@ -1,5 +1,5 @@
 //
-//  NSManagedObject+RBCoreDataStack.h
+//  RBManagedObjectCollection.m
 //
 //  RBCoreDataStack
 //
@@ -24,33 +24,28 @@
 //  THE SOFTWARE.
 //
 
+#import "RBManagedObjectCollection.h"
 
-#import <CoreData/CoreData.h>
 
-@interface NSManagedObject (RBCoreDataStack)
+@interface RBManagedObjectCollection ()
 
-+ (NSEntityDescription *)entityForContext:(NSManagedObjectContext *)context;
+@property (nonatomic, copy, readwrite) NSArray * objects;
 
-- (id)initWithContext:(NSManagedObjectContext *)context;
+@property (nonatomic, strong, readwrite) NSManagedObjectContext * context;
 
-+ (instancetype)createInContext:(NSManagedObjectContext *)context;
+@end
 
-- (instancetype)loadIntoContext:(NSManagedObjectContext *)context;
+@implementation RBManagedObjectCollection
 
-- (void)deleteFromContext:(NSManagedObjectContext *)context;
++ (instancetype)collectionWithObjects:(NSArray *)objects context:(NSManagedObjectContext *)context {
 
-+ (NSFetchRequest *)fetchRequest;
+    NSParameterAssert(objects && context);
 
-+ (NSArray *)fetchWithRequest:(NSFetchRequest *)requset inContext:(NSManagedObjectContext *)context;
+    RBManagedObjectCollection * collection = [self new];
+    collection.objects = objects;
+    collection.context = context;
 
-+ (instancetype)fetchFirstInContext:(NSManagedObjectContext *)context;
-
-+ (instancetype)fetchFirstWithPredicate:(NSPredicate *)predicate inContext:(NSManagedObjectContext *)context;
-
-+ (NSArray *)fetchAllInContext:(NSManagedObjectContext *)context;
-
-+ (NSArray *)fetchAllWithPredicate:(NSPredicate *)predicate inContext:(NSManagedObjectContext *)context;
-
-+ (NSArray *)fetchAllWithPredicate:(NSPredicate *)predicate sortDescriptors:(NSArray *)sortDescriptors inContext:(NSManagedObjectContext *)context;
+    return collection;
+}
 
 @end

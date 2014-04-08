@@ -55,6 +55,13 @@
     return [context existingObjectWithID:self.objectID error:NULL];
 }
 
+- (void)deleteFromContext:(NSManagedObjectContext *)context {
+    
+    NSAssert(context && context == self.managedObjectContext, @"Wrong context.");
+    
+    [context deleteObject:self];
+}
+
 + (NSFetchRequest *)fetchRequest {
     return [[NSFetchRequest alloc] initWithEntityName:NSStringFromClass(self)];
 }
@@ -73,6 +80,21 @@
 
         return results;
     }];
+}
+
++ (instancetype)fetchFirstInContext:(NSManagedObjectContext *)context {
+    return [self fetchFirstWithPredicate:nil inContext:context];
+}
+
++ (instancetype)fetchFirstWithPredicate:(NSPredicate *)predicate inContext:(NSManagedObjectContext *)context {
+    
+    NSFetchRequest * request = [self fetchRequest];
+    request.predicate = predicate;
+    request.fetchLimit = 1u;
+    
+    NSArray * results = [self fetchWithRequest:request inContext:context];
+    
+    return [results lastObject];
 }
 
 + (NSArray *)fetchAllInContext:(NSManagedObjectContext *)context {

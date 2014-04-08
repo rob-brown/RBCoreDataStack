@@ -27,6 +27,11 @@
 #import "RBCoreDataStack.h"
 
 
+NSString * const RBCoreDataStackDefaultModelName = @"Model.momd";
+NSString * const RBCoreDataStackDefaultStoreName = @"Model.sqlite";
+NSString * const RBCoreDataStackDefaultSeedName  = nil;
+
+
 @interface RBCoreDataStack ()
 
 @property (nonatomic, strong, readwrite) NSManagedObjectModel * managedObjectModel;
@@ -92,29 +97,22 @@
     return _defaultStack;
 }
 
-
-#pragma mark - Template methods
-
-- (NSString *)modelName {
-    return @"Model.momd";
+- (id)init {
+    
+    if ((self = [super init])) {
+        
+        // Sets up default values.
+        self.modelName = RBCoreDataStackDefaultModelName;
+        self.storeName = RBCoreDataStackDefaultStoreName;
+        self.seedName = RBCoreDataStackDefaultSeedName;
+        self.useAutomaticLightweightMigration = NO;
+        self.useJournaling = YES;
+        self.persistentStoreType = NSSQLiteStoreType;
+        self.storeDirectory = [[self applicationLibraryDirectory] absoluteString];
+    }
+    
+    return self;
 }
-
-- (NSString *)storeName {
-    return @"Model.sqlite";
-}
-
-- (NSString *)seedStoreName {
-    return nil;
-}
-
-- (BOOL)shouldUseAutomaticLightweightMigration {
-    return NO;
-}
-
-- (NSString *)persistentStoreType {
-    return NSSQLiteStoreType;
-}
-
 
 #pragma mark - Core Data stack
 
@@ -244,7 +242,7 @@
         @synchronized(self) {
             if (!_persistentStoreCoordinator) {
 
-                NSURL * storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:[self storeName]];
+                NSURL * storeURL = [NSURL URLWithString:[self.storeDirectory stringByAppendingPathComponent:self.storeName]];
 
                 NSError * error = nil;
                 NSFileManager * fileManager = [NSFileManager new];
@@ -252,9 +250,9 @@
                 // !!!: Be sure to create a new default database if the MOM file is ever changed.
 
                 // If there is no previous database, then a default one is used (if any).
-                if (![fileManager fileExistsAtPath:[storeURL path]] && [self seedStoreName]) {
+                if (![fileManager fileExistsAtPath:[storeURL path]] && [self seedName]) {
 
-                    NSURL * defaultStoreURL = [[NSBundle mainBundle] URLForResource:[self seedStoreName]
+                    NSURL * defaultStoreURL = [[NSBundle mainBundle] URLForResource:[self seedName]
                                                                       withExtension:nil];
 
                     // Copies the default database from the main bundle to the Documents directory.
@@ -272,14 +270,21 @@
 
                 _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
 
-                NSDictionary * options = @{NSSQLitePragmasOption : @{@"journal_mode": @"DELETE"}};
+                NSMutableDictionary * options = [NSMutableDictionary new];
+  
+                if ([self useJournaling]) {
+                    [options addEntriesFromDictionary:@{NSSQLitePragmasOption : @{@"journal_mode": @"WAL"}}];
+                }
+                else {
+                    [options addEntriesFromDictionary:@{NSSQLitePragmasOption : @{@"journal_mode": @"DELETE"}}];
+                }
 
-                if ([self shouldUseAutomaticLightweightMigration]) {
+                if ([self useAutomaticLightweightMigration]) {
                     // Automatically migrates the model when there are small changes.
-                    options = @{NSMigratePersistentStoresAutomaticallyOption : @YES,
-                                NSInferMappingModelAutomaticallyOption       : @YES,
-                                NSSQLitePragmasOption                        : @{@"journal_mode": @"DELETE"},
-                                };
+                    [options addEntriesFromDictionary:@{
+                                                        NSMigratePersistentStoresAutomaticallyOption : @YES,
+                                                        NSInferMappingModelAutomaticallyOption       : @YES,
+                                                        }];
                 }
 
                 NSPersistentStore * store = [_persistentStoreCoordinator addPersistentStoreWithType:[self persistentStoreType]
@@ -303,9 +308,13 @@
 
 #pragma mark - Application's Documents directory
 
-/**
- * Returns the URL to the application's Documents directory.
- */
+/// Returns the URL to the application's Library directory.
+- (NSURL *)applicationLibraryDirectory {
+    return [[[NSFileManager defaultManager] URLsForDirectory:NSLibraryDirectory
+                                                   inDomains:NSUserDomainMask] lastObject];
+}
+
+/// Returns the URL to the application's Documents directory.
 - (NSURL *)applicationDocumentsDirectory {
     return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory
                                                    inDomains:NSUserDomainMask] lastObject];
