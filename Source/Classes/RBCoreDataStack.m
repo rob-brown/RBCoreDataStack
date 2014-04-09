@@ -25,6 +25,7 @@
 //
 
 #import "RBCoreDataStack.h"
+#import "NSManagedObjectContext+RBCoreDataStack.h"
 
 
 NSString * const RBCoreDataStackDefaultModelName = @"Model.momd";
@@ -98,9 +99,9 @@ NSString * const RBCoreDataStackDefaultSeedName  = nil;
 }
 
 - (id)init {
-    
+
     if ((self = [super init])) {
-        
+
         // Sets up default values.
         self.modelName = RBCoreDataStackDefaultModelName;
         self.storeName = RBCoreDataStackDefaultStoreName;
@@ -110,7 +111,7 @@ NSString * const RBCoreDataStackDefaultSeedName  = nil;
         self.persistentStoreType = NSSQLiteStoreType;
         self.storeDirectory = [[self applicationLibraryDirectory] absoluteString];
     }
-    
+
     return self;
 }
 
@@ -118,39 +119,45 @@ NSString * const RBCoreDataStackDefaultSeedName  = nil;
 
 - (void)saveDefaultContextAsync:(dispatch_block_t)completion {
 
+    // Starts a background task to ensure the save goes through.
+    UIApplication * app = [UIApplication sharedApplication];
+    __block UIBackgroundTaskIdentifier taskID = 0u;
+
+    dispatch_block_t taskCompletion = ^{
+
+        if (taskID != UIBackgroundTaskInvalid) {
+            [app endBackgroundTask:taskID];
+            taskID = UIBackgroundTaskInvalid;
+        }
+    };
+
+    taskID = [app beginBackgroundTaskWithExpirationHandler:taskCompletion];
+
+    // Performs the actual save.
     [self.defaultContext performBlock:^{
 
-        if ([self.defaultContext hasChanges]) {
+        [self.defaultContext saveAndLogError];
 
-            [self.defaultContext save:NULL];
+        [self.rootContext performBlock:^{
 
-            [self.rootContext performBlock:^{
+            [self.rootContext saveAndLogError];
 
-                [self.rootContext save:NULL];
-
-                if (completion)
-                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0ul), completion);
-            }];
-        }
-        else {
             if (completion)
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0ul), completion);
-        }
+
+            taskCompletion();
+        }];
     }];
 }
 
 - (void)saveDefaultContextSync {
 
     [self.defaultContext performBlockAndWait:^{
+        [self.defaultContext saveAndLogError];
+    }];
 
-        if ([self.defaultContext hasChanges]) {
-
-            [self.defaultContext save:NULL];
-
-            [self.rootContext performBlockAndWait:^{
-                [self.rootContext save:NULL];
-            }];
-        }
+    [self.rootContext performBlockAndWait:^{
+        [self.rootContext saveAndLogError];
     }];
 }
 
@@ -271,7 +278,7 @@ NSString * const RBCoreDataStackDefaultSeedName  = nil;
                 _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
 
                 NSMutableDictionary * options = [NSMutableDictionary new];
-  
+
                 if ([self useJournaling]) {
                     [options addEntriesFromDictionary:@{NSSQLitePragmasOption : @{@"journal_mode": @"WAL"}}];
                 }
