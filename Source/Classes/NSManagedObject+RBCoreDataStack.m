@@ -67,17 +67,26 @@
 }
 
 + (NSArray *)fetchWithRequest:(NSFetchRequest *)requset inContext:(NSManagedObjectContext *)context {
+    return [self fetchWithRequest:requset inContext:context error:NULL];
+}
 
++ (NSArray *)fetchWithRequest:(NSFetchRequest *)requset inContext:(NSManagedObjectContext *)context error:(NSError *__autoreleasing*)outError {
+    
     NSParameterAssert(requset && context);
-
+    
     return [context performBlockAndWaitForReturn:^id{
-
+        
         NSError * error = nil;
         NSArray * results = [context executeFetchRequest:requset error:&error];
-
-        if (!results)
+        
+        if (!results) {
             NSLog(@"Error with fetch request: %@", error);
-
+            
+            if (outError) {
+                *outError = error;
+            }
+        }
+        
         return results;
     }];
 }
@@ -106,12 +115,26 @@
 }
 
 + (NSArray *)fetchAllWithPredicate:(NSPredicate *)predicate sortDescriptors:(NSArray *)sortDescriptors inContext:(NSManagedObjectContext *)context {
+    return [self fetchAllWithPredicate:predicate sortDescriptors:sortDescriptors inContext:context error:NULL];
+}
 
++ (NSArray *)fetchAllWithPredicate:(NSPredicate *)predicate sortDescriptors:(NSArray *)sortDescriptors inContext:(NSManagedObjectContext *)context error:(NSError *__autoreleasing*)outError {
+    
     NSFetchRequest * request = [self fetchRequest];
     request.predicate = predicate;
     request.sortDescriptors = sortDescriptors;
+    
+    return [self fetchWithRequest:request inContext:context error:outError];
+}
 
-    return [self fetchWithRequest:request inContext:context];
++ (NSArray *)fetchObjectIDsWithPredicate:(NSPredicate *)predicate sortDescriptors:(NSArray *)sortDescriptors inContext:(NSManagedObjectContext *)context error:(NSError *__autoreleasing*)outError {
+    
+    NSFetchRequest * request = [self fetchRequest];
+    request.predicate = predicate;
+    request.sortDescriptors = sortDescriptors;
+    request.resultType = NSManagedObjectIDResultType;
+    
+    return [self fetchWithRequest:request inContext:context error:outError];
 }
 
 @end
