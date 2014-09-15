@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name                = "RBCoreDataStack"
-  s.version             = "0.1.2"
+  s.version             = "0.1.3"
   s.summary             = "A simple wrapper around Core Data."
   s.description         = <<-DESC
                           A simple wrapper around Core Data.

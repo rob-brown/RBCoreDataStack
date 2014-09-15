@@ -51,6 +51,8 @@
 
 @property (nonatomic, assign) BOOL useJournaling;
 
+@property (nonatomic, strong) NSBundle * bundle;
+
 + (RBCoreDataStack *)defaultStack;
 
 - (NSManagedObjectContext *)createMainContext;
@@ -64,5 +66,7 @@
 - (void)saveDefaultContextAsync:(dispatch_block_t)completion;
 
 - (void)saveDefaultContextSync;
+
+- (NSURL *)storeURL;
 
 @end

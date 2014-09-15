@@ -109,7 +109,7 @@ NSString * const RBCoreDataStackDefaultSeedName  = nil;
         self.useAutomaticLightweightMigration = NO;
         self.useJournaling = YES;
         self.persistentStoreType = NSSQLiteStoreType;
-        self.storeDirectory = [[self applicationLibraryDirectory] absoluteString];
+        self.storeDirectory = [[self applicationLibraryDirectory] path];
     }
 
     return self;
@@ -211,8 +211,8 @@ NSString * const RBCoreDataStackDefaultSeedName  = nil;
             if (!_managedObjectModel) {
 
                 NSString * modelName = [self modelName];
-                NSURL * modelURL = [[NSBundle mainBundle] URLForResource:modelName
-                                                           withExtension:nil];
+                NSURL * modelURL = [[self bundle] URLForResource:modelName
+                                                   withExtension:nil];
                 if (!modelURL)
                     NSAssert1(NO,
                               @"No MOM file found named: %@ in the main bundle. "
@@ -249,7 +249,7 @@ NSString * const RBCoreDataStackDefaultSeedName  = nil;
         @synchronized(self) {
             if (!_persistentStoreCoordinator) {
 
-                NSURL * storeURL = [NSURL URLWithString:[self.storeDirectory stringByAppendingPathComponent:self.storeName]];
+                NSURL * storeURL = [self storeURL];
 
                 NSError * error = nil;
                 NSFileManager * fileManager = [NSFileManager new];
@@ -259,8 +259,8 @@ NSString * const RBCoreDataStackDefaultSeedName  = nil;
                 // If there is no previous database, then a default one is used (if any).
                 if (![fileManager fileExistsAtPath:[storeURL path]] && [self seedName]) {
 
-                    NSURL * defaultStoreURL = [[NSBundle mainBundle] URLForResource:[self seedName]
-                                                                      withExtension:nil];
+                    NSURL * defaultStoreURL = [[self bundle] URLForResource:[self seedName]
+                                                              withExtension:nil];
 
                     // Copies the default database from the main bundle to the Documents directory.
                     [fileManager copyItemAtURL:defaultStoreURL
@@ -312,6 +312,20 @@ NSString * const RBCoreDataStackDefaultSeedName  = nil;
 
     return _persistentStoreCoordinator;
 }
+
+- (NSBundle *)bundle {
+    
+    if (_bundle) {
+        return _bundle;
+    }
+    
+    return [NSBundle mainBundle];
+}
+
+- (NSURL *)storeURL {
+    return [NSURL fileURLWithPath:[self.storeDirectory stringByAppendingPathComponent:self.storeName]];
+}
+
 
 #pragma mark - Application's Documents directory
 
