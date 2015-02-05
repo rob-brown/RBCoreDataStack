@@ -34,7 +34,9 @@
     __block id obj = nil;
 
     [self performBlockAndWait:^{
-        obj = block();
+        @autoreleasepool {
+            obj = block();
+        }
     }];
 
     return obj;
