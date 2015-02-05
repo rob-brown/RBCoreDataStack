@@ -1,9 +1,9 @@
 Pod::Spec.new do |s|
   s.name                = "RBCoreDataStack"
-  s.version             = "0.1.4"
+  s.version             = "0.1.5"
   s.summary             = "A simple wrapper around Core Data."
   s.description         = <<-DESC
-                          A simple wrapper around Core Data.
+                          A simple wrapper around Core Data designed to work with one or many Core Data stacks.
                           DESC
   s.homepage            = "https://github.com/rob-brown/RBCoreDataStack"
   s.license             = { :type => 'MIT', :file => 'LICENSE' }
